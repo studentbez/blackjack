@@ -1,24 +1,27 @@
 #класс объекта "игра""
+require_relative 'interface'
 
 class Blackjack
-  attr_accessor :player, :dealer, :shooze, :bank
+  include Interface
+  attr_accessor :player, :dealer, :shooze, :bank, :player_hand, :dealer_hand
   #создаем дилера и игрока
   def initialize
     @dealer = Dealer.new()
+    @dealer_hand = Hand.new
     @player = Player.new("Игрок")
+    @player_hand = Hand.new
     @bank = Bank.new
   end
   #вводим имя
   def new_game
-    print "Введите ваше имя: "
+    enter_name
     @player.name = gets.chomp
     begin_game
   end
   #начинаем игру
   def begin_game
     loop do
-      puts "#{@player.name}, Начать игру?"
-      print " Да(1)\n Нет(2)\n >"
+      beginning_game(@player)
       choice = gets.chomp.to_i
       picked(choice)
     end
@@ -29,15 +32,15 @@ class Blackjack
     when 1 then beginning
     when 2 then restart
     else
-      puts "#{@player.name}, попробуйте еще раз"
+      another_turn(@player)
       begin_game
     end
     end
   end
   #управляющие клавиши
   def start
-    @player.show_cards
-    @dealer.show_cards
+    @player_hand.show_cards(@player)
+    @dealer_hand.show_cards(@dealer)
     buttoms(player_menu)
   end
 
@@ -58,9 +61,8 @@ class Blackjack
   #метод создает колоду, раздает карты, делает ставку, показывает карты
   def beginning
     create_shooze
+    distribution
     [@player, @dealer].each do |player|
-      player.cards = []
-      2.times { take_card(player) }
       bank.take(10)
       player.rate
     rescue Exception => e
@@ -69,12 +71,18 @@ class Blackjack
     end
     start
   end
+
+  def distribution
+    [@player_hand, @dealer_hand].each do |hand|
+      hand.cards = []
+      2.times { take_card(hand) }
+    end
+  end
+
   #создание колод
   def create_shooze
     #создать колоды 1 - 8
-    puts "__________________\nВыберите количество колод"
-    puts "Минимально будет выставлено 1, максимально 8"
-    print ">"
+    shoozes
     counts = gets.chomp.to_i
     if counts < 1
       counts = 1
@@ -83,71 +91,67 @@ class Blackjack
     else
       counts
     end
-    puts "Создано #{counts} колод"
+    shooze_counts(counts)
     @shooze = Packcard.new
     counts.times { @shooze.create_packcard }
     @shooze.shufll!
   end
   #метод управления игрой игрока
   def player_menu
-    puts "__________________\n(1) Пропустить"
-    puts "(2) Добавить карту" if !@player.finaly? && !@player.pip_21?
-    puts "(3) Вскрыть"
-    print ">"
+    uses_buttom(@player_hand)
     gets.chomp.to_i
   end
   #выдает карты
-  def take_card(player)
-    player.cards << @shooze.to_give_a_card
+  def take_card(hand)
+    hand.cards << @shooze.to_give_a_card
   end
   #черед игрока
   def player_turn
-    take_card(@player) if !@player.finaly?
+    take_card(@player_hand) if !@player_hand.finaly?
     dealer_turn
   end
   #черед дилера
   def dealer_turn
-    take_card(@dealer) if !@dealer.limit? && !@dealer.finaly?
+    take_card(@dealer_hand) if !@dealer_hand.limit? && !@dealer_hand.finaly?
     open_cards
     win
   end
   #вскрываем карты
   def open_cards
-    print "#{@player.show_cards}"
-    puts "Итоговые очки: #{@player.points}"
-    print "#{@dealer.visible_cards}"
-    puts "Итоговые очки: #{@dealer.points}"
+    result(@player, @player_hand)
+    result(@dealer, @dealer_hand)
   end
   #проверка на выигрышь
   def win
-    if @dealer.fail? || @player.pip_21? || (!@player.fail? && @player.points > @dealer.points)
+    player_criterion = !@player_hand.fail? && @player_hand.points > @dealer_hand.points
+    dealer_criterion = !@dealer_hand.fail? && @dealer_hand.points > @player_hand.points
+    if @dealer_hand.fail? || @player_hand.pip_21? || player_criterion
       player_wins
-    elsif @player.fail? || @dealer.pip_21? || (!@dealer.fail? && @dealer.points > @player.points)
+    elsif @player_hand.fail? || @dealer_hand.pip_21? || dealer_criterion
       dealer_wins
     else
       equal_wins
     end
-    puts "Ещё раз?"
+    another_turn(@player)
     begin_game
   end
 
   def player_wins
-    puts "Выиграл #{@player.name}"
-    player.take_win(@bank.give_win)
-    puts "Банк #{@player.name}: #{@player.bank}, #{@dealer.name}: #{@dealer.bank}"
+    @player.take_win(@bank.give_win)
+    win_text(@player)
+    lose_text(@dealer)
   end
 
   def dealer_wins
-    puts "Выиграл #{@dealer.name}"
-    dealer.take_win(@bank.give_win)
-    puts "Банк #{@player.name}: #{@player.bank}, #{@dealer.name}: #{@dealer.bank}"
+    @dealer.take_win(@bank.give_win)
+    win_text(@dealer)
+    lose_text(@player)
   end
 
   def equal_wins
-    puts "Ничья"
+    draw_text
     @player.take_win(no_wins)
     @dealer.take_win(no_wins)
-    puts "Банк #{@player.name}: #{@player.bank}, #{@dealer.name}: #{@dealer.bank}"
   end
 
   def no_wins
@@ -155,7 +159,7 @@ class Blackjack
   end
   #перезапуск?
   def restart
-    puts "__________________\nЗавершить игру? (Y/N)"
+    end_game
     answer = gets.chomp.to_s
     restart_answer(answer)
   end
