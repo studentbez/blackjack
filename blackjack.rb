@@ -63,11 +63,13 @@ class Blackjack
     create_shooze
     distribution
     [@player, @dealer].each do |player|
+    begin
       bank.take(10)
       player.rate
     rescue Exception => e
       puts e.message
       restart
+    end
     end
     start
   end
