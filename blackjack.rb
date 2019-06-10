@@ -21,7 +21,7 @@ class Blackjack
   #начинаем игру
   def begin_game
     loop do
-      beginning_game(@player)
+      beginning_game
       choice = gets.chomp.to_i
       picked(choice)
     end

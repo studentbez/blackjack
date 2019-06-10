@@ -11,10 +11,8 @@ class Packcard
   end
   #метод создания колоды
   def create_packcard
-    suit = ["\u2660", "\u2663", "\u2666", "\u2665"]#массив мастей
-    value = [ "A", "K", "Q", "J", 10, 9, 8, 7, 6, 5, 4, 3, 2]
-    suit.each do |suit|#присваиваем масть и значение карте
-      value.each do |value|
+    Card::SUIT.each do |suit|#присваиваем масть и значение карте
+      Card::VALUE_OF_CARD.each do |value|
         cards << Card.new(suit, value)
       end
     end

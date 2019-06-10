@@ -3,8 +3,8 @@ module Interface
     print "Введите ваше имя: "
   end
 
-  def beginning_game(player)
-    puts "#{player.name}, Начать игру?"
+  def beginning_game
+    puts "Начать игру?"
     print " Да(1)\n Нет(2)\n >"
   end
 
