@@ -1,8 +1,5 @@
-#класс Дилер потомок игрока
-#проверяет количество очков
-
 class Dealer < Player
-  def initialize(name = "Croupier")
+  def initialize(name = "Крупье")
     super
   end
 end

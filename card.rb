@@ -1,6 +1,3 @@
-#карта(масть, значение)
-#подсчитывает количество очков для карты
-
 class Card
   attr_accessor :suit, :value
 
@@ -11,9 +8,10 @@ class Card
     @suit = suit
     @value = value
   end
-  #метод подсчета кол-ва очков
+
+  #подсчет кол-ва очков
   def point
-    if ["K", "Q", "J"].include?(@value)#проверка на имение значения в массиве
+    if ["K", "Q", "J"].include?(@value)
       10
     elsif @value == "A"
       [11, 1]

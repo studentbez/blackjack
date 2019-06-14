@@ -1,12 +1,10 @@
-#хранит карты
-#считывает карты
-
 class Hand
   attr_accessor :cards
 
   def initialize
     @cards = []
   end
+
   #метод подсчитывает очки
   def points
     points = 0
@@ -21,26 +19,27 @@ class Hand
     end
     points
   end
+
+  #скрытые карты
+  def invisible_cards
+    @cards.collect { |card| card = "*" } * ""
+  end
+
   #показывает карты
-  def show_cards(player)
-    if player.name == "Croupier"
-      puts "Карты #{player.name}: #{@cards.collect { |card| card = "*" } * ""}"
-    else
-      visible_cards(player)
-    end
+  def visible_cards
+    @cards.collect {|card| "#{card.value}#{card.suit}"} * " "
   end
-   #показывает карты
-  def visible_cards(player)
-    puts "Карты #{player.name}: #{@cards.collect {|card| "#{card.value}#{card.suit}"} * " "}"
-  end
+
   #метод устанавливает предел в три карты
   def finaly?
     @cards.size == 3
   end
+
   #проверка на превышение 21
   def fail?
     points > 21
   end
+  
   #или равенство 21
   def pip_21?
     points == 21
